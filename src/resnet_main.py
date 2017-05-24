@@ -25,17 +25,47 @@ def get_data_list(dir_path, size):
     """
 
     images = os.listdir(dir_path)
-    img_list = []
+    resized_img_list = []
+    original_img_list = []
     img_path_list = []
     for fn in images:
+        print("resizing image %d/%d" % (len(resized_img_list)+1, len(images)))
         cur_fn = os.path.abspath(os.path.join(dir_path, fn))
         img = cv2.imread(cur_fn, cv2.IMREAD_UNCHANGED)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         if len(img.shape) == 3:
-            img_list.append(fit_image(img, size))
+            original_img_list.append(img)
+            resized_img_list.append(pad_resize(img, size))
             img_path_list.append(cur_fn)
-    return img_list, img_path_list
+    return resized_img_list, original_img_list, img_path_list
 
+def pad_resize(rgb_img, size):
+    size_x = rgb_img.shape[1]
+    size_y = rgb_img.shape[0]
+    center = (np.uint32(size_y / 2), np.uint32(size_x / 2))
+
+    if size_x < size_y:
+        diff = (size_y-size_x)/2.0
+        left = int(np.ceil(diff))
+        right = int(np.floor(diff))
+        padded = np.lib.pad(rgb_img, ((0, 0), (left, right), (0, 0)),  'constant', constant_values=0)
+        # padded = np.lib.pad(rgb_img, ((0, 0), (left, right), (0, 0)),  'median')
+
+    else:
+        diff = (size_x - size_y) / 2.0
+        top = int((np.ceil(diff)))
+        buttom = int(np.floor(diff))
+        padded = np.lib.pad(rgb_img, ((top, buttom), (0, 0), (0, 0)),  'constant', constant_values=0)
+        # padded = np.lib.pad(rgb_img, ((top, buttom), (0, 0), (0, 0)),  'median')
+
+    resized = cv2.resize(padded, (size, size))
+
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111)
+    # ax.imshow(resized)
+    # plt.show()
+
+    return resized
 
 def fit_image(rgb_img, size):
     """
@@ -82,7 +112,7 @@ def run_model(img_list):
     :param batches: image batches 
     :return: descriptor batches
     """
-    batch_size = 1
+    batch_size = 5
     height, width = 224, 224
     num_batches = int(np.ceil(len(img_list) / batch_size))
     checkpoint_path = r"..\trained\resnet_v2_50.ckpt"
@@ -139,6 +169,10 @@ def cluster_descriptors(data, num_clusters):
 
 def save_by_cluster(images, clusters, images_path, save_path):
     res_folder = os.path.join(save_path, "clustering_results")
+    folder_num = 1
+    while os.path.exists(res_folder):
+        res_folder = os.path.join(save_path, "clustering_results_%d" %folder_num)
+        folder_num = folder_num + 1
 
     for cluster in np.unique(clusters):
         path = os.path.join(res_folder, "%d" % cluster)
@@ -151,18 +185,69 @@ def save_by_cluster(images, clusters, images_path, save_path):
         fn = os.path.join(res_folder, "%d" % cluster, images_fn[i])
         cv2.imwrite(fn, images[i][:, :, ::-1])
 
+def get_best_descriptor_representations(cluster_descriptors):
+    avg_descriptor = np.mean(cluster_descriptors, axis=0)
+    dist_from_avg = np.sum(np.abs(cluster_descriptors - avg_descriptor), axis=1)
+    avg_sort = np.argsort(dist_from_avg)
+
+    return avg_sort
+
+def get_representing_images_paths(img_list, img_path_list, descriptors, clustering_labels):
+    representing_images_path = []
+    paths = np.vstack(img_path_list)
+
+    for cluster in np.unique(clustering_labels):
+        cluster_paths = paths[clustering_labels == cluster]
+        # indices according to the minimal distance from the average descriptor
+        desc_min_dist = get_best_descriptor_representations(descriptors[clustering_labels == cluster])
+        # TODO: fix image resolution, image contrast etc. and combine with the avg_desc_dist
+        # resolustion = []
+        # for p in cluster_paths:
+        #     img = cv2.imread(p)
+        #     resolustion.append(img.shape[0]*img.shape[1])
+        #
+        # median_img_res = np.median(resolustion)
+
+
+
+        representing_images_path.append(cluster_paths[desc_min_dist[0]])
+    return representing_images_path
+
+
+def save_representing_images(images_path, save_path):
+    res_folder = os.path.join(save_path, "album_results")
+    folder_num = 1
+    while os.path.exists(res_folder):
+        res_folder = os.path.join(save_path, "album_results_%d" %folder_num)
+        folder_num = folder_num + 1
+
+    os.makedirs(res_folder)
+
+    for path in images_path:
+        fn = os.path.basename(path[0])
+        rep_img = cv2.imread(path[0])
+        res_path = os.path.join(res_folder, fn)
+        cv2.imwrite(res_path, rep_img)
+
 
 if __name__ == "__main__":
     # PARAMS:
     img_size = 224
-    images_dir = os.path.join(CURRENT_PATH, "..", "data_set", "Zuriel vila")
-    output_dir = os.path.join(CURRENT_PATH, "..", "results", "resnet_Zuriel")
+    input_folder = "new_zealand_trip"
+    # images_dir = os.path.join(CURRENT_PATH, "..", "data_set", "Zuriel vila")
+    images_dir = os.path.join(CURRENT_PATH, "..", "data_set", input_folder)
+    output_dir = os.path.join(CURRENT_PATH, "..", "results", input_folder)
 
     # Get image list
-    img_list, img_path_list = get_data_list(images_dir, img_size)
-    num_images = len(img_list)
+    resized_img_list, original_img_list, img_path_list = get_data_list(images_dir, img_size)
+    num_images = len(resized_img_list)
     num_clusters = int(round(np.sqrt(num_images)))
-    descriptors = run_model(img_list)
+    descriptors = run_model(resized_img_list)
     clustering_labels = cluster_descriptors(descriptors, num_clusters)
-    save_by_cluster(img_list, clustering_labels, img_path_list, output_dir)
+    save_by_cluster(resized_img_list, clustering_labels, img_path_list, output_dir)
+    avg_represetives_path = get_representing_images_paths(original_img_list,
+                                                          img_path_list,
+                                                          descriptors,
+                                                          clustering_labels)
+    save_representing_images(avg_represetives_path, output_dir)
     print("")
