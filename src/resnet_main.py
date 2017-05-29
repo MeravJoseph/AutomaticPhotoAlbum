@@ -9,6 +9,7 @@ from resnet.resnet_v2 import resnet_v2_50
 from resnet import resnet_utils
 from sklearn.cluster import KMeans
 import numpy as np
+import album_display as disp
 
 slim = tf.contrib.slim
 
@@ -28,6 +29,7 @@ def get_data_list(dir_path, size):
     resized_img_list = []
     original_img_list = []
     img_path_list = []
+    # TODO: add ignore from every non fn
     for fn in images:
         print("resizing image %d/%d" % (len(resized_img_list)+1, len(images)))
         cur_fn = os.path.abspath(os.path.join(dir_path, fn))
@@ -166,24 +168,24 @@ def cluster_descriptors(data, num_clusters):
     labels = kmeans.labels_
     return labels
 
-
-def save_by_cluster(images, clusters, images_path, save_path):
-    res_folder = os.path.join(save_path, "clustering_results")
-    folder_num = 1
-    while os.path.exists(res_folder):
-        res_folder = os.path.join(save_path, "clustering_results_%d" %folder_num)
-        folder_num = folder_num + 1
-
-    for cluster in np.unique(clusters):
-        path = os.path.join(res_folder, "%d" % cluster)
-        if not os.path.exists(path):
-            os.makedirs(path)
-
-    images_fn = [os.path.split(x)[-1] for x in images_path]
-
-    for i, cluster in enumerate(clusters):
-        fn = os.path.join(res_folder, "%d" % cluster, images_fn[i])
-        cv2.imwrite(fn, images[i][:, :, ::-1])
+# TODO: check if redundent
+# def save_by_cluster(images, clusters, images_path, save_path):
+#     res_folder = os.path.join(save_path, "clustering_results")
+#     folder_num = 1
+#     while os.path.exists(res_folder):
+#         res_folder = os.path.join(save_path, "clustering_results_%d" %folder_num)
+#         folder_num = folder_num + 1
+#
+#     for cluster in np.unique(clusters):
+#         path = os.path.join(res_folder, "%d" % cluster)
+#         if not os.path.exists(path):
+#             os.makedirs(path)
+#
+#     images_fn = [os.path.split(x)[-1] for x in images_path]
+#
+#     for i, cluster in enumerate(clusters):
+#         fn = os.path.join(res_folder, "%d" % cluster, images_fn[i])
+#         cv2.imwrite(fn, images[i][:, :, ::-1])
 
 def get_best_descriptor_representations(cluster_descriptors):
     avg_descriptor = np.mean(cluster_descriptors, axis=0)
@@ -233,8 +235,7 @@ def save_representing_images(images_path, save_path):
 if __name__ == "__main__":
     # PARAMS:
     img_size = 224
-    input_folder = "new_zealand_trip"
-    # images_dir = os.path.join(CURRENT_PATH, "..", "data_set", "Zuriel vila")
+    input_folder = "cat"
     images_dir = os.path.join(CURRENT_PATH, "..", "data_set", input_folder)
     output_dir = os.path.join(CURRENT_PATH, "..", "results", input_folder)
 
@@ -244,10 +245,14 @@ if __name__ == "__main__":
     num_clusters = int(round(np.sqrt(num_images)))
     descriptors = run_model(resized_img_list)
     clustering_labels = cluster_descriptors(descriptors, num_clusters)
-    save_by_cluster(resized_img_list, clustering_labels, img_path_list, output_dir)
-    avg_represetives_path = get_representing_images_paths(original_img_list,
+    #save_by_cluster(resized_img_list, clustering_labels, img_path_list, output_dir)
+    represetives_path = get_representing_images_paths(original_img_list,
                                                           img_path_list,
                                                           descriptors,
                                                           clustering_labels)
-    save_representing_images(avg_represetives_path, output_dir)
+    save_representing_images(represetives_path, output_dir)
+
+    represetives_path_list = np.hstack(represetives_path)
+    # Create HTML display of the selected images
+    disp.create_album_display(img_path_list, clustering_labels, represetives_path_list, input_folder, clustering=True)
     print("")
