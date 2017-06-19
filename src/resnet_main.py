@@ -1,15 +1,14 @@
-import numpy as np
 import tensorflow as tf
 import cv2
 import os
 import sys
 import itertools
 
-from resnet.resnet_v2 import resnet_v2_50
-from resnet import resnet_utils
+from models.resnet.resnet_v2 import resnet_v2_50
+from models.resnet import resnet_utils
 from sklearn.cluster import KMeans
 import numpy as np
-import album_display as disp
+import display.album_display as album_display
 
 slim = tf.contrib.slim
 
@@ -19,10 +18,9 @@ sys.path.append(CURRENT_PATH)
 
 def get_data_list(dir_path, size):
     """
-
     :param dir_path: images directory path
     :param size: image target size 
-    :return: list of images, in a uniform size of size x size, anda list of their full path
+    :return: list of images in a uniform size (of size x size), a list of the original images and a list of their full path
     """
 
     images = os.listdir(dir_path)
@@ -31,7 +29,7 @@ def get_data_list(dir_path, size):
     img_path_list = []
     # TODO: add ignore from every non fn
     for fn in images:
-        print("resizing image %d/%d" % (len(resized_img_list)+1, len(images)))
+        print("resizing image %d/%d" % (len(resized_img_list) + 1, len(images)))
         cur_fn = os.path.abspath(os.path.join(dir_path, fn))
         img = cv2.imread(cur_fn, cv2.IMREAD_UNCHANGED)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -41,27 +39,34 @@ def get_data_list(dir_path, size):
             img_path_list.append(cur_fn)
     return resized_img_list, original_img_list, img_path_list
 
+
 def pad_resize(rgb_img, size):
+    """
+        :param rgb_img: a rgb image
+        :param size: the targeted size for resizing
+        :return: a square rgb image resize to the desirable size 
+    """
     size_x = rgb_img.shape[1]
     size_y = rgb_img.shape[0]
     center = (np.uint32(size_y / 2), np.uint32(size_x / 2))
 
     if size_x < size_y:
-        diff = (size_y-size_x)/2.0
+        diff = (size_y - size_x) / 2.0
         left = int(np.ceil(diff))
         right = int(np.floor(diff))
-        padded = np.lib.pad(rgb_img, ((0, 0), (left, right), (0, 0)),  'constant', constant_values=0)
+        padded = np.lib.pad(rgb_img, ((0, 0), (left, right), (0, 0)), 'constant', constant_values=0)
         # padded = np.lib.pad(rgb_img, ((0, 0), (left, right), (0, 0)),  'median')
 
     else:
         diff = (size_x - size_y) / 2.0
         top = int((np.ceil(diff)))
         buttom = int(np.floor(diff))
-        padded = np.lib.pad(rgb_img, ((top, buttom), (0, 0), (0, 0)),  'constant', constant_values=0)
+        padded = np.lib.pad(rgb_img, ((top, buttom), (0, 0), (0, 0)), 'constant', constant_values=0)
         # padded = np.lib.pad(rgb_img, ((top, buttom), (0, 0), (0, 0)),  'median')
 
     resized = cv2.resize(padded, (size, size))
 
+    # TODO: add the code below or erase it.
     # fig = plt.figure()
     # ax = fig.add_subplot(111)
     # ax.imshow(resized)
@@ -69,12 +74,13 @@ def pad_resize(rgb_img, size):
 
     return resized
 
+
 def fit_image(rgb_img, size):
     """
     given an RGB image, return the new image in the given size, 
     using crop from the center and resize
 
-    :param img: the image that should be resized
+    :param rgb_img: the image that should be resized
     :param size: image target size 
     :return: image size of size x size
     """
@@ -91,11 +97,11 @@ def fit_image(rgb_img, size):
     return resized
 
 
-def create_image_batches(img_list, img_path_list, batch_size):
+def create_image_batches(img_list, path_list, batch_size):
     """
-
     :param img_list: list of images
-    :param batch_size: size of wanted batch
+    :param path_list: the paths to the images in img_list 
+    :param batch_size: maximum size of wanted batch
     :return: list of batches of images, where each batch maximum size is batch_size
     """
     batch_num = np.uint32(np.ceil(len(img_list) / batch_size))
@@ -103,15 +109,16 @@ def create_image_batches(img_list, img_path_list, batch_size):
     paths_batches = []
     for i in range(batch_num):
         batches.append(img_list[i * batch_size: ((i + 1) * batch_size)])
-        paths_batches.append(img_path_list[i * batch_size: ((i + 1) * batch_size)])
+        paths_batches.append(path_list[i * batch_size: ((i + 1) * batch_size)])
     return batches, paths_batches
 
 
 def run_model(img_list):
     """
-    Gets image batches, run the pretrained inception_v4 on all the
+    Gets image batches, run the pretrained resnet_v2 on all the
     images, and return batches of descriptors (one for each image)
-    :param batches: image batches 
+    :param img_list: list of images
+    #:param batches: image batches 
     :return: descriptor batches
     """
     batch_size = 5
@@ -141,7 +148,7 @@ def run_model(img_list):
             # batches, batches_path_list = create_image_batches(img_list, img_path_list, batch_size)
             descriptor_list = []
             for batch_num in range(num_batches):
-                print("running batch %d/%d" % (batch_num+1, num_batches))
+                print("running batch %d/%d" % (batch_num + 1, num_batches))
                 cur_batch = img_list[batch_num * batch_size:(batch_num + 1) * batch_size]
                 images = np.rollaxis(np.stack(cur_batch, axis=3), 3)
                 # descriptor = sess.run(end_points['PreLogitsFlatten'], feed_dict={inputs: images})
@@ -157,7 +164,6 @@ def run_model(img_list):
 
 def cluster_descriptors(data, num_clusters):
     """
-
     :param data: the descriptors of the images we want to cluster 
     :return: 
     """
@@ -167,6 +173,7 @@ def cluster_descriptors(data, num_clusters):
     kmeans.fit(data)
     labels = kmeans.labels_
     return labels
+
 
 # TODO: check if redundent
 # def save_by_cluster(images, clusters, images_path, save_path):
@@ -188,11 +195,16 @@ def cluster_descriptors(data, num_clusters):
 #         cv2.imwrite(fn, images[i][:, :, ::-1])
 
 def get_best_descriptor_representations(cluster_descriptors):
+    """
+        :param cluster_descriptors: descriptors of images in a cluster
+        :return: avg_sort: a list of the descriptors sorted in decreased order of compatibility
+    """
     avg_descriptor = np.mean(cluster_descriptors, axis=0)
     dist_from_avg = np.sum(np.abs(cluster_descriptors - avg_descriptor), axis=1)
     avg_sort = np.argsort(dist_from_avg)
 
     return avg_sort
+
 
 def get_representing_images_paths(img_list, img_path_list, descriptors, clustering_labels):
     representing_images_path = []
@@ -220,7 +232,7 @@ def save_representing_images(images_path, save_path):
     res_folder = os.path.join(save_path, "album_results")
     folder_num = 1
     while os.path.exists(res_folder):
-        res_folder = os.path.join(save_path, "album_results_%d" %folder_num)
+        res_folder = os.path.join(save_path, "album_results_%d" % folder_num)
         folder_num = folder_num + 1
 
     os.makedirs(res_folder)
@@ -245,14 +257,15 @@ if __name__ == "__main__":
     num_clusters = int(round(np.sqrt(num_images)))
     descriptors = run_model(resized_img_list)
     clustering_labels = cluster_descriptors(descriptors, num_clusters)
-    #save_by_cluster(resized_img_list, clustering_labels, img_path_list, output_dir)
+    # save_by_cluster(resized_img_list, clustering_labels, img_path_list, output_dir)
     represetives_path = get_representing_images_paths(original_img_list,
-                                                          img_path_list,
-                                                          descriptors,
-                                                          clustering_labels)
+                                                      img_path_list,
+                                                      descriptors,
+                                                      clustering_labels)
     save_representing_images(represetives_path, output_dir)
 
     represetives_path_list = np.hstack(represetives_path)
     # Create HTML display of the selected images
-    disp.create_album_display(img_path_list, clustering_labels, represetives_path_list, input_folder, clustering=True)
+    album_display.create_album_display(img_path_list, clustering_labels, represetives_path_list,
+                                       input_folder, clustering=True)
     print("")
