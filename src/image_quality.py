@@ -11,7 +11,7 @@ def image_global_contrast(image):
     """
     avg = np.mean(image)
     variance = np.mean(np.square(image - avg))
-    return np.sqrt(variance)
+    return np.sqrt(np.sqrt(sum(np.square(variance))))
 
 
 def image_resolution(image):

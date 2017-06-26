@@ -1,0 +1,5 @@
+<RCC>
+  <qresource prefix="Icon">
+    <file>ic_photo_album_black_48dp_2x.png</file>
+  </qresource>
+</RCC>
