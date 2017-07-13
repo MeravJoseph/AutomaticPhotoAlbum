@@ -1,6 +1,5 @@
 import os
 import webbrowser
-import cv2
 from random import randint
 import numpy as np
 
