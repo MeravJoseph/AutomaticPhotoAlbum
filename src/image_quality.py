@@ -19,7 +19,7 @@ def image_resolution(image):
     :param image: An image
     :return: The number of pixels in the image
     """
-    return image.size
+    return image.shape[0] * image.shape[1]
 
 
 def image_noise(image):
@@ -33,9 +33,10 @@ def image_noise(image):
 def contrast_sort(image_list):
     """
     :param image_list: List of images
-    :return: An array of the images sorted by contrast 
+    :return: An array of indices of the images sorted by contrast 
     """
-    return np.argsort(image_list, key=image_global_contrast, reverse=True)
+    graded_image_list = image_global_contrast(image_list)
+    return np.argsort(graded_image_list)
 
 
 def image_perceived_sharpness(image):

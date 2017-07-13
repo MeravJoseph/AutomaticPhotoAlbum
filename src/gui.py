@@ -1,7 +1,7 @@
 import sys
 from os.path import expanduser
 
-from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog
+from PyQt5.QtWidgets import QMainWindow, QApplication, QFileDialog, QProgressBar
 from PyQt5 import uic, QtGui
 
 Ui_MainWindow, QtBaseClass = uic.loadUiType("mainGui_3A.ui")
@@ -12,42 +12,49 @@ class MyApp(QMainWindow, Ui_MainWindow):
         super(MyApp, self).__init__()
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
+
+        # set logo of app and fixing the screen size
         logo_src = "appLogo.png"
         self.setWindowIcon(QtGui.QIcon(logo_src))
-        self.ui.pushButton_Directory.clicked.connect(self.choose_directory)
+        self.setFixedSize(self.size())
+
+        # initializing variables and setting event listeners
+        self.ui.pushButton_inputDirectory.clicked.connect(self.choose_input_directory)
+        self.ui.pushButton_outputDirectory.clicked.connect(self.choose_output_directory)
         self.ui.pushButton_CreateAlbum.clicked.connect(self.create_album)
-        self.ui.pushButton_Directory.setToolTip('Choose directory')
+        self.ui.pushButton_inputDirectory.setToolTip('Choose input directory')
+        self.ui.pushButton_outputDirectory.setToolTip('Choose output directory')
         self.ui.checkBox_Quality.setToolTip('Include image quality assessment upon selection of representative photos')
         self.ui.checkBox_Launch.setToolTip('Display output album when done')
 
-    def choose_directory(self):
+        # self.progressBar = QProgressBar()
+        # self.progressBar.setRange(0, 10000)
+        # self.progressBar.setValue(0)
+        # self.statusBar().addPermanentWidget(self.progressBar)
+        # self.progressBar.show()
+        # self.ui.progressbar.setVisible(False)
+
+    def choose_input_directory(self):
         print("Hello1")
-        dir_ = QFileDialog.getExistingDirectory(None, 'Select a folder:', 'C:\\', QtGui.QFileDialog.ShowDirsOnly)
-        return 1
-        # dir = QtGui.QFileDialog.getExistingDirectory(this, tr("Open Directory"),
-        #                                         "/home",
-        #                                              QtGui.QFileDialog::ShowDirsOnly
-        #                                                      | QFileDialog::DontResolveSymlinks);
-        #
-        # my_dir = QtGui.QFileDialog.getExistingDirectory(
-        #     self,
-        #     "Open a folder",
-        #     expanduser("~"),
-        #     QtGui.QFileDialog.ShowDirsOnly
-        # )
-        # return 1
-        # self.ui.lineEdit_Directory.setText(my_dir)
-        # price = int(self.ui.price_box.toPlainText())
-        # tax = (self.ui.tax_rate.value())
-        # total_price = price + ((tax / 100) * price)
-        # total_price_string = "The total price with tax is: " + str(total_price)
-        # self.ui.results_window.setText(total_price_string)
+        input_dir = QFileDialog.getExistingDirectory(None, 'Select a folder:', expanduser("~"))
+        self.ui.lineEdit_inputDirectory.setText(input_dir)
+
+    def choose_output_directory(self):
+        print("Hello1")
+        input_dir = QFileDialog.getExistingDirectory(None, 'Select a folder:', expanduser("~"))
+        self.ui.lineEdit_outputDirectory.setText(input_dir)
 
     def create_album(self):
         print("Hello2")
-        # current_dir = self.ui.lineEdit_Directory.toPlainText()
-        # quality = self.ui.checkBox_Quality.value()
-        # launch = self.ui.checkBox_Launch.value()
+        current_input_dir = self.ui.lineEdit_inputDirectory.text()
+        current_output_dir = self.ui.lineEdit_outputDirectory.text()
+        if current_input_dir != "" and current_output_dir != "":
+            quality = self.ui.checkBox_Quality.isChecked()
+            launch = self.ui.checkBox_Launch.isChecked()
+            print(current_input_dir)
+            print(current_output_dir)
+            print(quality)
+            print(launch)
         return 1
 
 
