@@ -24,8 +24,7 @@ class MyApp(QMainWindow, Ui_MainWindow):
         self.ui.pushButton_CreateAlbum.clicked.connect(self.create_album)
         self.ui.pushButton_inputDirectory.setToolTip('Choose input directory')
         self.ui.pushButton_outputDirectory.setToolTip('Choose output directory')
-        self.ui.checkBox_Quality.setToolTip('Include image quality assessment upon selection of representative photos')
-        self.ui.checkBox_Launch.setToolTip('Display output album when done')
+
 
         # self.progressBar = QProgressBar()
         # self.progressBar.setRange(0, 10000)
