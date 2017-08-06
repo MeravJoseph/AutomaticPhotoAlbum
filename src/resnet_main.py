@@ -172,7 +172,7 @@ def get_best_descriptor_representations_list(cluster_descriptors):
     avg_descriptor = np.mean(cluster_descriptors, axis=0)
     dist_from_avg = np.sum(np.abs(cluster_descriptors - avg_descriptor), axis=1)
 
-    dist_grade = 1/dist_from_avg
+    dist_grade = 1/(dist_from_avg + 0.0001)
     best_dist = max(dist_grade)
     dist_grade = dist_grade/best_dist
 
@@ -248,7 +248,7 @@ def save_representing_images(images_path, save_path):
         res_path = os.path.join(res_folder, fn)
         cv2.imwrite(res_path, rep_img)
 
-def create_album(album_name, images_dir, output_dir, num_of_selected_images):
+def create_album(album_name, images_dir, output_dir, num_of_selected_images=None):
     img_size = 224
 
     # Get image list
@@ -274,10 +274,9 @@ def create_album(album_name, images_dir, output_dir, num_of_selected_images):
 
 if __name__ == "__main__":
     # PARAMS:
-    album_name = "wedding"
-    images_dir = os.path.join(CURRENT_PATH, "..", "data_set", album_name)
+    album_name = "ilan Is 60"
+    images_dir = os.path.join(CURRENT_PATH, "..", "data_set", album_name, "all")
     output_dir = os.path.join(CURRENT_PATH, "..", "results", album_name)
-    images_dir = r"C:\Users\meravj\Pictures\WedPics"
-    num_of_images = 200
+    num_of_images = 28
 
     create_album(album_name, images_dir, output_dir, num_of_images)
