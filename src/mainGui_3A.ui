@@ -6,8 +6,13 @@
    <rect>
     <x>0</x>
     <y>0</y>
+<<<<<<< HEAD
     <width>850</width>
     <height>545</height>
+=======
+    <width>856</width>
+    <height>616</height>
+>>>>>>> refs/remotes/origin/master
    </rect>
   </property>
   <property name="windowTitle">
@@ -50,6 +55,38 @@
       <item>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
+<<<<<<< HEAD
+=======
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <property name="rightMargin">
+           <number>100</number>
+          </property>
+          <property name="bottomMargin">
+           <number>30</number>
+          </property>
+          <item>
+           <widget class="QLabel" name="label_5">
+            <property name="font">
+             <font>
+              <pointsize>11</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Album Name:</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEdit">
+            <property name="maxLength">
+             <number>50</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+>>>>>>> refs/remotes/origin/master
          <widget class="QLabel" name="label_2">
           <property name="font">
            <font>
@@ -134,20 +171,34 @@
        </layout>
       </item>
       <item>
+<<<<<<< HEAD
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <widget class="QCheckBox" name="checkBox_Quality">
+=======
+       <layout class="QVBoxLayout" name="verticalLayout_5">
+        <property name="bottomMargin">
+         <number>22</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label_4">
+>>>>>>> refs/remotes/origin/master
           <property name="font">
            <font>
             <pointsize>11</pointsize>
            </font>
           </property>
           <property name="text">
+<<<<<<< HEAD
            <string>Include image quality</string>
+=======
+           <string>Number of Representive images:</string>
+>>>>>>> refs/remotes/origin/master
           </property>
          </widget>
         </item>
         <item>
+<<<<<<< HEAD
          <widget class="QCheckBox" name="checkBox_Launch">
           <property name="font">
            <font>
@@ -159,6 +210,80 @@
           </property>
          </widget>
         </item>
+=======
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <property name="leftMargin">
+           <number>50</number>
+          </property>
+          <item>
+           <widget class="QRadioButton" name="radioButton_2">
+            <property name="font">
+             <font>
+              <pointsize>11</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>Auto</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_5">
+            <property name="sizeConstraint">
+             <enum>QLayout::SetDefaultConstraint</enum>
+            </property>
+            <property name="rightMargin">
+             <number>500</number>
+            </property>
+            <item>
+             <widget class="QRadioButton" name="radioButton">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>11</pointsize>
+               </font>
+              </property>
+              <property name="text">
+               <string>Select Manually:</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QSpinBox" name="spinBox">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>1000</number>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
+        <property name="topMargin">
+         <number>12</number>
+        </property>
+>>>>>>> refs/remotes/origin/master
         <item>
          <widget class="QPushButton" name="pushButton_CreateAlbum">
           <property name="font">
