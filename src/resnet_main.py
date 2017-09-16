@@ -32,12 +32,13 @@ def get_data_list(dir_path, size):
         print("resizing image %d/%d" % (len(resized_img_list)+1, len(images)))
         cur_fn = os.path.abspath(os.path.join(dir_path, fn))
         img = cv2.imread(cur_fn, cv2.IMREAD_UNCHANGED)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        if len(img.shape) < 3:
-            img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
+        if img is not None:
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            if len(img.shape) < 3:
+                img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
 
-        resized_img_list.append(pad_resize(img, size))
-        img_path_list.append(cur_fn)
+            resized_img_list.append(pad_resize(img, size))
+            img_path_list.append(cur_fn)
 
     return resized_img_list, img_path_list
 
@@ -113,7 +114,7 @@ def run_model(img_list):
     :param batches: image batches 
     :return: descriptor batches
     """
-    batch_size = 5
+    batch_size = 150
     height, width = 224, 224
     num_batches = int(np.ceil(len(img_list) / batch_size))
     checkpoint_path = r"..\trained\resnet_v2_50.ckpt"
@@ -274,9 +275,9 @@ def create_album(album_name, images_dir, output_dir, num_of_selected_images=None
 
 if __name__ == "__main__":
     # PARAMS:
-    album_name = "ilan Is 60"
-    images_dir = os.path.join(CURRENT_PATH, "..", "data_set", album_name, "all")
+    album_name = "cat"
+    images_dir = os.path.join(CURRENT_PATH, "..", "data_set", album_name)
     output_dir = os.path.join(CURRENT_PATH, "..", "results", album_name)
-    num_of_images = 28
+    num_of_images = None
 
     create_album(album_name, images_dir, output_dir, num_of_images)
